@@ -2,31 +2,31 @@
 
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\EpisodeController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\QuoteController;
+use App\Http\Controllers\StatisticController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request)
-{
-	return $request->user();
-});
-Route::group(['prefix' => 'episodes'], function ()
-{
-	Route::get('/', [EpisodeController::class, 'index']);
-	Route::get('/{episode}', [EpisodeController::class, 'show']);
+Route::group(['prefix' => '/user'], function () {
+    Route::post('/register', [UserController::class, 'register'])->name('register');
+    Route::post('/login', [UserController::class, 'login'])->name('user.login');
 
 });
-Route::group(['prefix' => 'characters'], function ()
-{
-	Route::get('/', [CharacterController::class, 'index']);
+Route::group(['middleware' => ['auth:sanctum', 'counting.request', 'throttle:20']], function () {
+    Route::group(['prefix' => 'episodes'], function () {
+        Route::get('/', [EpisodeController::class, 'index']);
+        Route::get('/{episode_id}', [EpisodeController::class, 'show']);
+    });
+    Route::group(['prefix' => 'characters'], function () {
+        Route::get('/', [CharacterController::class, 'index']);
+        Route::get('/random', [CharacterController::class, 'randomCharacter']);
+    });
+
+    Route::group(['prefix' => 'quotes'], function () {
+        Route::get('/', [QuoteController::class, 'index']);
+        Route::get('/random', [QuoteController::class, 'random_quotes']);
+    });
+    Route::get('/stats', [StatisticController::class, 'numberOfRequestUsers']);
+    Route::get('/my-stats', [StatisticController::class, 'numberOfRequestUser']);
 });
+
